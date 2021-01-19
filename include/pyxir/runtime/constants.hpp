@@ -26,6 +26,7 @@ const std::string pxCpuTfRuntimeModule = "cpu-tf";
 const std::string pxCpuNpRuntimeModule = "cpu-np";
 const std::string pxCpuRuntimeModule = "cpu";
 const std::string pxVaiRuntimeModule = "vai";
+const std::string pxXirRuntimeModule = "vai";
 
 const std::vector<std::string> cpuTargets {"cpu"};
 
@@ -34,6 +35,9 @@ const std::vector<std::string> vaiTargets {"DPUCADX8G", "dpuv1"};
 #elif defined(USE_VAI_RT_DPUCZDX8G)
 const std::vector<std::string> vaiTargets {"DPUCZDX8G-zcu104", "DPUCZDX8G-zcu102", "DPUCZDX8G-ultra96",
                                            "dpuv2-zcu104", "dpuv2-zcu102", "dpuv2-ultra96"};
+#elif defined(USE_VAI_RT_DPUCAHX8H)
+const std::vector<std::string> vaiTargets {"DPUCAHX8H-u50"};
+
 #else
 const std::vector<std::string> vaiTargets {};
 #endif
