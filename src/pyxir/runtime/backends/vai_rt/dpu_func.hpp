@@ -32,9 +32,10 @@ class DpuFunc : public KernelFunc {
 
   public:
     DpuFunc() {}
+    ~DpuFunc();
     DpuFunc(XLayerHolder &xl, const std::string &build_dir);
 
-    void operator()(std::vector<XBufferHolder> &in_tensors,
+	    void operator()(std::vector<XBufferHolder> &in_tensors,
                     std::vector<XBufferHolder> &out_tensors);
 
   private:

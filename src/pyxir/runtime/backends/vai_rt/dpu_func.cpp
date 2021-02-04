@@ -227,6 +227,12 @@ void DpuFunc::operator()(
   pxDebug(("DPU Time: " + std::to_string(duration.count())).c_str());
 }
 
+DpuFunc::~DpuFunc()
+
+{
+	DpuFunc::dpu_runner_=nullptr;
+}	
+
 } // vai_rt
 } // namespace runtime
 } // namespace pyxir
