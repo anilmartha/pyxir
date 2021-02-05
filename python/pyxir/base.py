@@ -228,6 +228,15 @@ def compile_opaque_func(xgraph: XGraph,
 
     meta_d['px_model'] = 'px_model.json'
     meta_d['px_params'] = 'px_model.h5'
+    num_fpga = os.getenv("NUM_FPGA")
+    if num_fpga is None:
+        num_fpga=1
+    else:
+        num_fpga=int(num_fpga)
+
+    if(num_fpga>1):
+        meta_d['acquire_cu'] = 'false'
+        meta_d['num_fpga'] = num_fpga
 
     with open(meta_file, 'w') as f:
         json.dump(meta_d, f, indent=4, sort_keys=True)

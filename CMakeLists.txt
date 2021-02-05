@@ -82,6 +82,8 @@ else()
   # Remove VAI_RT backend source files
   file(GLOB_RECURSE vitisai_rt_SOURCES "src/pyxir/runtime/backends/vai_rt/*.cpp")
   list(REMOVE_ITEM SOURCES ${vitisai_rt_SOURCES})
+  file(GLOB_RECURSE vitisai_default_SOURCES "src/pyxir/runtime/backends/xir_rt/*.cpp")
+  list(REMOVE_ITEM SOURCES ${vitisai_default_SOURCES})
 endif()
 
 add_library(${TARGET} SHARED ${SOURCES})
