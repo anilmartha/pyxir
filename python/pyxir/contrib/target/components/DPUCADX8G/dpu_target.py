@@ -60,19 +60,6 @@ def xgraph_dpu_op_support_annotator(xg: XGraph, target: Target, **kwargs) -> Non
     OpSupportPass(target)(xg)
 
 
-    def __init__(self, target: Target):
-        super().__init__(target)
-
-    def __call__(self, xg: XGraph) -> None:
-        """Call Pattern Annotator pass on XGraph before calling default op support functionality"""
-        XGraphPatternAnnotator()(xg)
-        super(OpSupportPass, self).__call__(xg)
-
-
-def xgraph_dpu_op_support_annotator(xg: XGraph, target: Target, **kwargs) -> None:
-    OpSupportPass(target)(xg)
-
-
 def xgraph_dpu_build_func(xgraph, work_dir=os.getcwd(), data_layout='NCHW', **kwargs) -> XGraph:
     """
     Build/schedule and XGraph for execution on the DPUCADX8G target
