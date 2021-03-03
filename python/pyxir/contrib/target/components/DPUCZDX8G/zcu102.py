@@ -72,14 +72,14 @@ def xgraph_dpu_zcu102_compiler(xgraph, **kwargs):
     # Vitis-AI 1.1
     #old_arch = "/opt/vitis_ai/compiler/arch/dpuv2/ZCU102/ZCU102.json"
     # Vitis-AI 1.2 - ...
-    #new_arch = "/opt/vitis_ai/compiler/arch/DPUCZDX8G/ZCU102/arch.json"
+    new_arch = "/opt/vitis_ai/compiler/arch/DPUCZDX8G/ZCU102/arch.json"
 
-    #if os.path.exists(new_arch):
-    #    arch = new_arch
-    #else:
-    #    arch = old_arch
+    if os.path.exists(new_arch):
+        arch = new_arch
+    else:
+        arch = arch_path
 
-    compiler = VAICompiler(xgraph, arch=arch_path, meta=meta, dcf=dcf_path, **kwargs)
+    compiler = VAICompiler(xgraph, arch=arch, meta=meta, dcf=dcf_path, **kwargs)
     c_xgraph = compiler.compile()
 
     return c_xgraph

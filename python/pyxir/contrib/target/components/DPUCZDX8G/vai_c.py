@@ -103,24 +103,25 @@ class VAICompiler(XGraphBaseCompiler):
                                       " one input at the moment but found: {}"
                                       .format(len(input_names)))
 
-        #command = """
-        #vai_c_tensorflow \
-        #    --frozen_pb {} \
-        #    --arch {} \
-        #    --output_dir {} \
-        #    --net_name {} \
-        #    --options "{}"
-        #""".format(netcfg, self.arch, self.work_dir, net_name, str(dict()))
-        # import pdb; pdb.set_trace()
-
+        netcfg=netcfg.replace('deploy_model.pb','quantize_eval_model.pb')
         command = """
-        dnnc-dpuv2 --parser tensorflow\
+        vai_c_tensorflow \
             --frozen_pb {} \
-            --cpu_arch {} \
+            --arch {} \
             --output_dir {} \
             --net_name {} \
-            --dcf {}
-        """.format(netcfg, self.cpu_arch, self.work_dir, net_name, self.dcf)
+            --options "{}"
+        """.format(netcfg, self.arch, self.build_dir, net_name, str(dict()))
+        # import pdb; pdb.set_trace()
+
+        #command = """
+        #dnnc-dpuv2 --parser tensorflow\
+        #    --frozen_pb {} \
+        #    --cpu_arch {} \
+        #    --output_dir {} \
+        #    --net_name {} \
+        #    --dcf {}
+        #""".format(netcfg, self.cpu_arch, self.work_dir, net_name, self.dcf)
 
 
         logger.info("Command: {}".format(command))
@@ -133,82 +134,92 @@ class VAICompiler(XGraphBaseCompiler):
         output, error = process.communicate()
         logger.debug("{} {}".format(output, error))
 
-        if output is not None:
-            output = output.decode('utf-8')
+        #if output is not None:
+        #    output = output.decode('utf-8')
 
-            logger.info("Output: {}".format(output))
-            logger.info("Output names: {}".format(output_names))
+        #    logger.info("Output: {}".format(output))
+        #    logger.info("Output names: {}".format(output_names))
 
-            do = DNNCOutput(str(repr(output)))
+        #    do = DNNCOutput(str(repr(output)))
 
-            dpu_input_nodes = do.get_input_nodes()
-            dpu_output_nodes = do.get_output_nodes()
-            dpu_output_nodes_on_shapes = do.get_output_nodes_on_shapes()
+        #    dpu_input_nodes = do.get_input_nodes()
+        #    dpu_output_nodes = do.get_output_nodes()
+        #    dpu_output_nodes_on_shapes = do.get_output_nodes_on_shapes()
 
-            in_shapes_log = ["{}*{}*{}".format(ishape[1], ishape[2], ishape[3])
-                             for ishape in input_shapes]
-            out_shapes_log = ["{}*{}*{}".format(os[1], os[2], os[3])
-                              for os in output_shapes]
+        #    in_shapes_log = ["{}*{}*{}".format(ishape[1], ishape[2], ishape[3])
+        #                     for ishape in input_shapes]
+        #    out_shapes_log = ["{}*{}*{}".format(os[1], os[2], os[3])
+        #                      for os in output_shapes]
 
-            in_map = {in_name: in_name + ':0' for in_name, _ in zip(input_names, in_shapes_log)}
-            out_map = {}
+        #    in_map = {in_name: in_name + ':0' for in_name, _ in zip(input_names, in_shapes_log)}
+        #    out_map = {}
 
-            for out_name, out_shape_str in zip(output_names, out_shapes_log):
-                # DNNC changes naming
-                dnnc_out_name = do.get_dnnc_str(out_name)
-                if dnnc_out_name in dpu_output_nodes:
-                    out_map[out_name] = dpu_output_nodes[dnnc_out_name]
-                # out_name: dpu_output_nodes[out_shape_str] + ':0'
-                else:
-                    assert len(dpu_output_nodes_on_shapes) == len(output_names),\
-                        "Can't retrieve right out tensor names from DNNC compiler output"
-                    out_map[out_name] = dpu_output_nodes_on_shapes[out_shape_str]
+        #    for out_name, out_shape_str in zip(output_names, out_shapes_log):
+        #        # DNNC changes naming
+        #        dnnc_out_name = do.get_dnnc_str(out_name)
+        #        if dnnc_out_name in dpu_output_nodes:
+        #            out_map[out_name] = dpu_output_nodes[dnnc_out_name]
+        #        # out_name: dpu_output_nodes[out_shape_str] + ':0'
+        #        else:
+        #            assert len(dpu_output_nodes_on_shapes) == len(output_names),\
+        #                "Can't retrieve right out tensor names from DNNC compiler output"
+        #            out_map[out_name] = dpu_output_nodes_on_shapes[out_shape_str]
 
-            logger.info("DPU kernel in_map: {}".format(in_map))
-            logger.info("DPU kernel out_map: {}".format(out_map))
+        #    logger.info("DPU kernel in_map: {}".format(in_map))
+        #    logger.info("DPU kernel out_map: {}".format(out_map))
 
         if error is not None:
             error = error.decode('utf-8')
             raise ValueError(error)
 
-        logger.info("VAI_C Output: {}".format(output))
-        logger.info("VAI_C Error: {}".format(error))
+        #logger.info("VAI_C Output: {}".format(output))
+        #logger.info("VAI_C Error: {}".format(error))
 
-        logger.debug("CROSS COMPILATION")
-        command = """
-        aarch64-linux-gnu-gcc -fPIC -shared {}/dpu_{}.elf -o {}/libdpumodel{}.so
-        """.format(self.work_dir, net_name, self.work_dir, net_name)
+        #logger.debug("CROSS COMPILATION")
+        #command = """
+        #aarch64-linux-gnu-gcc -fPIC -shared {}/dpu_{}.elf -o {}/libdpumodel{}.so
+        #""".format(self.work_dir, net_name, self.work_dir, net_name)
 
-        logger.debug("Command: {}".format(command))
+        #logger.debug("Command: {}".format(command))
 
-        process = subprocess.Popen(command.split(),
-                                   cwd=FILE_PATH,
-                                   stdout=subprocess.PIPE)
-        output, error = process.communicate()
+        #process = subprocess.Popen(command.split(),
+        #                           cwd=FILE_PATH,
+        #                           stdout=subprocess.PIPE)
+        #output, error = process.communicate()
 
-        if output is not None:
-            output = output.decode('utf-8')
-        if error is not None:
-            error = error.decode('utf-8')
-            raise ValueError(error)
+        #if output is not None:
+        #    output = output.decode('utf-8')
+        #if error is not None:
+        #    error = error.decode('utf-8')
+        #    raise ValueError(error)
 
-        logger.debug("Output: {}".format(output))
-        logger.debug("Error: {}".format(error))
+        #logger.debug("Output: {}".format(output))
+        #logger.debug("Error: {}".format(error))
 
-        lib_file = "{}/libdpumodel{}.so".format(self.work_dir, net_name)
-        to_lib_file = "{}/libdpumodel{}.so".format(self.build_dir, net_name)
-        shutil.move(lib_file, to_lib_file)
+        #lib_file = "{}/libdpumodel{}.so".format(self.work_dir, net_name)
+        #to_lib_file = "{}/libdpumodel{}.so".format(self.build_dir, net_name)
+        #shutil.move(lib_file, to_lib_file)
 
-        # meta_file = "{}/meta.json".format(self.work_dir)
-        self.meta["vitis_dpu_kernel"] = net_name
-        to_meta_file = "{}/meta.json".format(self.build_dir)
-        # shutil.move(meta_file, to_meta_file)
+        ## meta_file = "{}/meta.json".format(self.work_dir)
+        #self.meta["vitis_dpu_kernel"] = net_name
+        #to_meta_file = "{}/meta.json".format(self.build_dir)
+        ## shutil.move(meta_file, to_meta_file)
 
-        with open(to_meta_file, 'w') as f:
-            json.dump(self.meta, f)
+        #with open(to_meta_file, 'w') as f:
+        #    json.dump(self.meta, f)
 
-        self.c_output.add(net_name, [to_lib_file], in_map, out_map)
+        #self.c_output.add(net_name, [to_lib_file], in_map, out_map)
 
+        #self.xgraph.set_compiler_output(self.c_output)
+        in_map = {in_name: in_name for in_name in input_names}
+        out_map = {out_name: out_name for out_name in output_names}
+        self.c_output.add(net_name, ['libvart-runner.so'], in_map, out_map)
         self.xgraph.set_compiler_output(self.c_output)
+
+        # TODO
+        self.xgraph.meta_attrs['compiled'] = True
+        self.xgraph.meta_attrs['compiler_libs'] = ['libvart-runner.so']
+        self.xgraph.meta_attrs['compiler_in_map'] = in_map
+        self.xgraph.meta_attrs['compiler_out_map'] = out_map
 
         return self.xgraph
