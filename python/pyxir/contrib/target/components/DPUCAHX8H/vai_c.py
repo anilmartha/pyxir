@@ -95,14 +95,43 @@ class VAICompiler(XGraphBaseCompiler):
                                       .format(len(input_names)))
 
         netcfg=netcfg.replace('deploy_model.pb','quantize_eval_model.pb')
+
+
         command = """
-        vai_c_tensorflow \
-            --frozen_pb {} \
-            --arch {} \
-            --output_dir {} \
-            --net_name {} \
-            --options "{}"
-        """.format(netcfg, self.arch, self.build_dir, net_name, str(dict()))
+        xnnc-run \
+            --type {} \
+            --layout {} \
+            --model {} \
+            --out {} \
+            --inputs-shape "{}"
+        """.format("tensorflow", "NHWC", netcfg, "/workspace/ci-tvm/byoc_submission/DPUCAHX8H-u50_build/xp0_org.xmodel", "4,224,224,3")
+        
+        #command = """
+        #vai_c_tensorflow \
+        #    --frozen_pb {} \
+        #    --arch {} \
+        #    --output_dir {} \
+        #    --net_name {} \
+        #    --options "{}"
+        #""".format(netcfg, self.arch, self.build_dir, net_name, str(dict()))
+        print("command ", command)
+        logger.info("Command: {}".format(command))
+
+        process = subprocess.Popen(command,
+                                   shell=True,
+                                   cwd=FILE_PATH,
+                                   stdout=subprocess.PIPE)
+
+        output, error = process.communicate()
+        logger.debug("{} {}".format(output, error))
+
+        
+        command = """
+        xcompiler  \
+            -i {} \
+            -o {} \
+            -t {}    
+        """.format("/workspace/ci-tvm/byoc_submission/DPUCAHX8H-u50_build/xp0_org.xmodel", "/workspace/ci-tvm/byoc_submission/DPUCAHX8H-u50_build/xp0.xmodel", "DPUCADF8H" )
 
         logger.info("Command: {}".format(command))
 
@@ -113,6 +142,7 @@ class VAICompiler(XGraphBaseCompiler):
 
         output, error = process.communicate()
         logger.debug("{} {}".format(output, error))
+
 
 
         if error is not None:

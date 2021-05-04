@@ -218,13 +218,13 @@ def compile_opaque_func(xgraph: XGraph,
 
     meta_file = os.path.join(build_dir, 'meta.json')
 
-    if (not os.path.isfile(meta_file)):
-        raise ValueError("Could not find meta file at: {}"
-                         .format(meta_file))
+    #if (not os.path.isfile(meta_file)):
+    #    raise ValueError("Could not find meta file at: {}"
+    #                     .format(meta_file))
 
-    with open(meta_file, 'r') as json_file:
-        meta_d = json.load(json_file)
-
+    #with open(meta_file, 'r') as json_file:
+    #    meta_d = json.load(json_file)
+    meta_d={}
     meta_d['px_model'] = 'px_model.json'
     meta_d['px_params'] = 'px_model.h5'
 

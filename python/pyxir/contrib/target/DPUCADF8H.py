@@ -21,7 +21,7 @@ from .components.DPUCADF8H.dpu_target import xgraph_dpu_optimizer
 from .components.DPUCADF8H.dpu_target import xgraph_dpu_compiler
 from .components.DPUCADF8H.dpu_target import xgraph_dpu_quantizer
 from .components.DPUCADF8H.dpu_target import xgraph_dpu_op_support_annotator
-from .components.DPUCADF8H.dpu_target import DPULayer
+#from .components.DPUCADF8H.dpu_target import DPULayer
 
 
 # Register target
@@ -33,7 +33,7 @@ pyxir.register_target('DPUCADF8H',
                       xgraph_dpu_op_support_annotator)
 
 # Register layer
-pyxir.register_op('cpu-np', 'DPU', base.get_layer(DPULayer))
+#pyxir.register_op('cpu-np', 'DPU', base.get_layer(DPULayer))
 
 # Register op support
 from .components.DPUCADF8H import dpu_op_support

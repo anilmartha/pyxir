@@ -37,7 +37,7 @@ from pyxir.quantization.default_quantizer import XGraphDefaultQuantizer
 from pyxir.graph.transformers.layout_transformation_pass import \
     XGraphLayoutTransformationPass
 from pyxir.quantization.decent_quantizer import DECENTQuantizer
-from pyxir.contrib.target.components.common.vai_c import VAICompiler
+from .vai_c import VAICompiler
 
 
 logger = logging.getLogger('pyxir')
@@ -61,7 +61,7 @@ def xgraph_dpu_op_support_annotator(xg: XGraph, target: Target, **kwargs) -> Non
     OpSupportPass(target)(xg)
 
 
-def xgraph_dpu_build_func(xgraph, work_dir=os.getcwd(), data_layout='NCHW', **kwargs) -> XGraph:
+def xgraph_dpu_build_func(xgraph, work_dir=os.getcwd(), data_layout='NHWC', **kwargs) -> XGraph:
     """
     Build/schedule and XGraph for execution on the DPUCADF8H target
 

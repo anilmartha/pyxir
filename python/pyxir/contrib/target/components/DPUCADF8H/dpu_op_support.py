@@ -282,16 +282,16 @@ def relu_op_support(X, bXs, tXs):
 #     return True
 
 
-@pyxir.register_op_support_check('DPUCADF8H', 'Scale')
-def scale_op_support(X, bXs, tXs):
-    # Type: (XLayer, List[XLayer], List[XLayer]) -> boolean
-    """ Check whether we can execute the provided Scale operator
-        on the DPUCADF8H target """
-
-    axis = X.attrs['axis']
-    channels = X.shapes[axis]
-    # axis != -1 and 
-    return channels > 1 and channels <= 4096
+#@pyxir.register_op_support_check('DPUCADF8H', 'Scale')
+#def scale_op_support(X, bXs, tXs):
+#    # Type: (XLayer, List[XLayer], List[XLayer]) -> boolean
+#    """ Check whether we can execute the provided Scale operator
+#        on the DPUCADF8H target """
+#
+#    axis = X.attrs['axis']
+#    channels = X.shapes[axis]
+#    # axis != -1 and 
+#    return channels > 1 and channels <= 4096
 
 
 @pyxir.register_op_support_check('DPUCADF8H', 'Upsampling2D')
