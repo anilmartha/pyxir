@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Module wrapping DPUCAHX8H VAI compiler """
+""" Module wrapping Vitis AI Compiler """
 
 import os
 import json
@@ -34,7 +34,7 @@ FILE_PATH = os.path.dirname(os.path.realpath(__file__))
 
 class VAICompiler(XGraphBaseCompiler):
 
-    """ Vitis-AI compiler wrapper for DPUCAHX8H """
+    """Vitis-AI compiler wrapper"""
 
     xgraph_partitioner = XGraphPartitioner()
     xgraph_factory = XGraphFactory()
@@ -70,7 +70,7 @@ class VAICompiler(XGraphBaseCompiler):
         
 
     def compile(self) -> None:
-        """ Start DPUCAHX8H compilation """
+        """Start compilation"""
 
         net_name = list(self.netcfgs.keys())[0]
         netcfg = list(self.netcfgs.values())[0]
@@ -94,7 +94,7 @@ class VAICompiler(XGraphBaseCompiler):
                                       " one input at the moment but found: {}"
                                       .format(len(input_names)))
 
-        netcfg=netcfg.replace('deploy_model.pb', 'quantize_eval_model.pb')
+        netcfg=netcfg.replace('deploy_model.pb','quantize_eval_model.pb')
         command = """
         vai_c_tensorflow \
             --frozen_pb {} \

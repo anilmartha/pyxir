@@ -11,3 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Module for the RemoveUnusedOperators pass"""
+
+
+from ..passing import XGraphMutator
+
+from .. import XGraph
+from ..layer.xlayer import defaultXLayer, XLayer
+
+
+class RemoveUnusedOps(XGraphMutator):
+    """Remove unused operators"""
+
+    def __init__(self):
+        super().__init__()
+
+    def visit(self, X: XLayer) -> XLayer:
+        if len(X.bottoms) == 0 and len(X.tops) == 0:
+            return None
+        return super().visit(X)
