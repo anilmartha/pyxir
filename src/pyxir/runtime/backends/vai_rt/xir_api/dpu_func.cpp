@@ -13,15 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+ #include <fstream>
 
 #include <cstdlib>
 #include <cassert>
 #include <algorithm>
 #include <chrono>
+#include <xir/tensor/tensor.hpp>
+#include <xir/util/data_type.hpp>
+
+
 
 #include "pyxir/common/util.hpp"
 #include "dpu_func.hpp"
-
+using namespace std;
 namespace pyxir {
 namespace runtime {
 namespace vai_rt {
@@ -75,7 +80,7 @@ DpuFunc::DpuFunc(XLayerHolder &xl, const std::string &build_dir) : KernelFunc(xl
   std::transform(dpu_runner_out_tensors_.begin(), dpu_runner_out_tensors_.end(),
                  std::back_inserter(dpu_runner_out_tensor_names),
                  [](const xir::Tensor *t) -> const std::string { return t->get_name(); });
-
+dpu_runner_in_tensor_names[0]="xinput0/aquant";
   std::string name = "/aquant";
   for (int i = 0; i < dpu_runner_in_tensor_names.size(); i++)
   {
@@ -156,19 +161,37 @@ void DpuFunc::operator()(
   std::vector<XBufferHolder> &in_tensors,
   std::vector<XBufferHolder> &out_tensors)
 {
-  auto inputTensors = runner_->get_input_tensors();
-  auto outputTensors = runner_->get_output_tensors();
+  auto runner = runner_.get();
+  auto inputs = dynamic_cast<vart::RunnerExt*>(runner)->get_inputs();
+  auto outputs = dynamic_cast<vart::RunnerExt*>(runner)->get_outputs();
 
-  std::vector<std::unique_ptr<vart::TensorBuffer>> inputs, outputs;
-  std::vector<vart::TensorBuffer*> inputsPtr, outputsPtr;
-  std::vector<std::shared_ptr<xir::Tensor>> batchTensors;
-  int in_idx = 0;
-  for(const auto& iTensor: inputTensors) {
-	  const auto& in_dims = iTensor->get_shape();
-	  batchTensors.push_back(std::shared_ptr<xir::Tensor>(xir::Tensor::create(iTensor->get_name(), in_dims, xir::DataType{xir::DataType::FLOAT, sizeof(float) * 8u})));
-    inputsPtr.push_back(new CpuFlatTensorBuffer(in_tensors[in_idx]->data, batchTensors.back().get()));
-    in_idx++;
+  auto inputTensors = runner->get_input_tensors();
+  auto outputTensors = runner->get_output_tensors();
+
+  auto & out_dims = outputTensors[0]->get_shape();
+  auto & in_dims = inputTensors[0]->get_shape();
+
+  auto scale_in = pow(2,(*inputs.begin())->get_tensor()->get_attr<std::int32_t>("fix_point"));
+  auto scale_out = pow(2,(-1)*(*outputs.begin())->get_tensor()->get_attr<std::int32_t>("fix_point"));
+
+
+	int8_t* std_data = reinterpret_cast<int8_t*>(inputs[0]->data().first);
+  int8_t* std_data_out = reinterpret_cast<int8_t*>(outputs[0]->data().first);
+  auto inSize = inputs[0]->get_tensor()->get_element_num();
+  auto outSize =outputs[0]->get_tensor()->get_element_num();
+  auto pData = static_cast<float*>(in_tensors[0]->data);
+
+
+
+  for(auto i = 0; i < inSize; i++)
+  {
+    std_data[i] = static_cast<int8_t>(pData[i] * scale_in);
   }
+
+  auto job_id = runner->execute_async(inputs, outputs);
+  runner->wait(job_id.first, -1);
+
+
   std::vector<XBufferHolder> out_tensors_local;
   if (out_tensors_local.empty())
   {
@@ -176,41 +199,43 @@ void DpuFunc::operator()(
     {
       std::vector<ssize_t> buffer_shape = shape;
       buffer_shape[0] = inputTensors[0]->get_shape()[0];
-      out_tensors_local.push_back(create_buffer(buffer_shape));
+      out_tensors_local.push_back(create_buffer1(buffer_shape));
     }
   }
 
-  int out_idx = 0;
-  for (const auto &oTensor : outputTensors)
-  {
-    const auto &out_dims = oTensor->get_shape();
-    batchTensors.push_back(std::shared_ptr<xir::Tensor>(xir::Tensor::create(oTensor->get_name(), out_dims, xir::DataType{xir::DataType::FLOAT, sizeof(float) * 8u})));
-    outputsPtr.push_back(new CpuFlatTensorBuffer(out_tensors_local[out_tensor_order_[out_idx]]->data, batchTensors.back().get()));
-    out_idx++;
-  }
-  auto job_id = runner_->execute_async(inputsPtr, outputsPtr);
-  runner_->wait(job_id.first, -1);
-  out_idx = 0;
+
+int out_idx = 0;
+
+
   if (out_tensors.empty())
   {
     for (const auto &shape : xl_->shapes)
     {
       std::vector<ssize_t> buffer_shape = shape;
       buffer_shape[0] = in_tensors[0]->shape[0];
-      pyxir::XBufferHolder xb_out = std::shared_ptr<pyxir::XBuffer>(new pyxir::XBuffer((void *)out_tensors_local[out_idx]->data, 4, "f", buffer_shape.size(), buffer_shape, true, true));
+      pyxir::XBufferHolder xb_out = std::shared_ptr<pyxir::XBuffer>(new pyxir::XBuffer(
+                                      (void *)out_tensors_local[out_idx]->data, 4, 
+                                      "f", buffer_shape.size(), buffer_shape, false, false));
       out_tensors.push_back(xb_out);
       out_idx++;
     }
   }
-  for (int i = 0; i < inputsPtr.size(); ++i)
-  {
-    delete inputsPtr[i];
-  }
+  
+out_idx = 0;
+ for (const auto &shape : xl_->shapes)
+ {
+  std::vector<ssize_t> buffer_shape = shape;
+  float *out_pyxir=(float*)out_tensors_local[out_idx]->data;
+    for (int i=0;i < outSize ; i++)
+    {
+        int8_t fix = std_data_out[i];
+        out_pyxir[i] = ((float) fix) * scale_out;
+  
+    }
+ }
 
-  for (int i = 0; i < outputsPtr.size(); ++i)
-  {
-    delete outputsPtr[i];
-  }
+
+
 }
 
 } // vai_rt
