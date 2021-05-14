@@ -188,7 +188,7 @@ inline XBufferHolder create_buffer1(std::vector<ssize_t> &shape)
     size *= -1;
   void* input_data = malloc(4 * size); 
   return std::shared_ptr<XBuffer>(
-    new XBuffer(input_data, 4, "f", buffer_shape.size(), shape, true, false));
+    new XBuffer(input_data, 4, "f", buffer_shape.size(), shape, false, false));
 }
 
 } // pyxir

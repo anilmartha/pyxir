@@ -38,7 +38,7 @@ class DpuFunc : public KernelFunc {
     void operator()(std::vector<XBufferHolder> &in_tensors,
                     std::vector<XBufferHolder> &out_tensors);
 
-  private:
+  public:
 
     /** @brief The names of the input tensor in the order that they will be provided */
     std::vector<std::string> in_tensor_names_;
@@ -70,6 +70,25 @@ class DpuFunc : public KernelFunc {
     int64_t total_dpu_time_ = 0;
 };
 
+class DpuFunc1 : public DpuFunc {
+
+public:
+    //DpuFunc1() {}
+    DpuFunc1(XLayerHolder &xl, const std::string &build_dir) : DpuFunc(xl, build_dir)
+    {
+
+    }
+
+    //DpuFunc1(XLayerHolder &xl, const std::string &build_dir);
+    //~DpuFunc1();
+
+    void operator()(std::vector<XBufferHolder> &in_tensors,
+                    std::vector<XBufferHolder> &out_tensors);
+
+};
+
+
 } // vai_rt
 } // namespace runtime
 } // namespace pyxir
+
