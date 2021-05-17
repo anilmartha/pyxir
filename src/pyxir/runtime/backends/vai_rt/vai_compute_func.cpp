@@ -42,7 +42,7 @@ VaiComputeFunc::VaiComputeFunc(
   : xg_(xg), target_(target), build_dir_(build_dir)
 {
   pxDebug("Initialize VaiComputeFunc");
-
+  
   for (const std::string &itn : in_tensor_names)
     in_tensor_names_.push_back(pyxir::stringify(itn));
 
@@ -54,9 +54,12 @@ VaiComputeFunc::VaiComputeFunc(
   for (std::string &xl_name : xg->get_layer_names())
   {
     XLayerHolder X = xg->get(xl_name);
-
-    if (X->xtype[0] == "DPU" || X->xtype[0] == "DPUV1" || X->xtype[0] == "DPUV2") {
-      std::unique_ptr<KernelFunc> dpu_func(new DpuFunc1(X, build_dir_)); 
+    
+    if (X->xtype[0] == "DPU" && target == "DPUCADF8H") {
+      std::unique_ptr<KernelFunc> dpu_func(new DpuFuncV3Int8(X, build_dir_)); 
+      kernel_funcs_.push_back(std::move(dpu_func));
+    } else if (X->xtype[0] == "DPU" || X->xtype[0] == "DPUV1" || X->xtype[0] == "DPUV2") {
+      std::unique_ptr<KernelFunc> dpu_func(new DpuFunc(X, build_dir_)); 
       kernel_funcs_.push_back(std::move(dpu_func));
     } else if (X->xtype[0] == "Input") {
       // Skip input as it's an identity operation

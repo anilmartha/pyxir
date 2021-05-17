@@ -70,18 +70,10 @@ class DpuFunc : public KernelFunc {
     int64_t total_dpu_time_ = 0;
 };
 
-class DpuFunc1 : public DpuFunc {
+class DpuFuncV3Int8 : public DpuFunc {
 
 public:
-    //DpuFunc1() {}
-    DpuFunc1(XLayerHolder &xl, const std::string &build_dir) : DpuFunc(xl, build_dir)
-    {
-
-    }
-
-    //DpuFunc1(XLayerHolder &xl, const std::string &build_dir);
-    //~DpuFunc1();
-
+    DpuFuncV3Int8(XLayerHolder &xl, const std::string &build_dir) : DpuFunc(xl, build_dir){}
     void operator()(std::vector<XBufferHolder> &in_tensors,
                     std::vector<XBufferHolder> &out_tensors);
 
