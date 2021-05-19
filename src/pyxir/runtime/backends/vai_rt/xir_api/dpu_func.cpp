@@ -89,7 +89,7 @@ DpuFunc::DpuFunc(XLayerHolder &xl, const std::string &build_dir) : KernelFunc(xl
   std::transform(dpu_runner_out_tensors_.begin(), dpu_runner_out_tensors_.end(),
                  std::back_inserter(dpu_runner_out_tensor_names),
                  [](const xir::Tensor *t) -> const std::string { return t->get_name(); });
-  dpu_runner_in_tensor_names[0]="xinput0/aquant";
+  
   std::string name = "/aquant";
   for (int i = 0; i < dpu_runner_in_tensor_names.size(); i++)
   {
