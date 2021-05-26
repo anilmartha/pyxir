@@ -59,7 +59,6 @@ VaiComputeFunc::VaiComputeFunc(
       #if defined(USE_VART_CLOUDDPU)
         std::unique_ptr<KernelFunc> dpu_func(new DpuFuncInt8(X, build_dir_));     
       #endif
-      kernel_funcs_.push_back(std::move(dpu_func));
     } else if (X->xtype[0] == "DPU" || X->xtype[0] == "DPUV1" || X->xtype[0] == "DPUV2") {
       std::unique_ptr<KernelFunc> dpu_func(new DpuFunc(X, build_dir_)); 
       kernel_funcs_.push_back(std::move(dpu_func));
