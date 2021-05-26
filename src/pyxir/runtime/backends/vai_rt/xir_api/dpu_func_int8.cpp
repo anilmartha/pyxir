@@ -70,18 +70,6 @@ void DpuFuncInt8::operator()(
   auto job_id = runner->execute_async(inputs, outputs);
   runner->wait(job_id.first, -1);
 
-/*
-  std::vector<XBufferHolder> out_tensors_local;
-  if (out_tensors_local.empty())
-  {
-    for (const auto &shape : xl_->shapes)
-    {
-      std::vector<ssize_t> buffer_shape = shape;
-      buffer_shape[0] = inputTensors[0]->get_shape()[0];
-      out_tensors_local.push_back(create_buffer(buffer_shape)); //memory creation
-    }
-  }
-*/
  out_idx = 0;
 
   std::vector<float *> out_pyxir;
@@ -95,7 +83,6 @@ void DpuFuncInt8::operator()(
       }
     out_idx++;
   }
-
   out_idx = 0;
   if (out_tensors.empty())
   {
