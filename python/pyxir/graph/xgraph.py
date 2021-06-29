@@ -18,6 +18,7 @@ import copy
 import logging
 import warnings
 import libpyxir as lpx
+import pyxir as px
 
 from .layer.xlayer import XLayer
 from .layer.xattr_dict import XAttrDict
@@ -175,7 +176,14 @@ class XGraph(object):
             raise ValueError("xlayer argument should be of type: XLayer but"
                              " was: {}".format(type(X)))
 
+        # xlayer      = X._get_xlayer()
+        # xlayer.name = px.stringify(xlayer.name)
+        # for i in range(len(xlayer.bottoms)):
+        #     xlayer.bottoms[i] = px.stringify(xlayer.bottoms[i])
+        # for i in range(len(xlayer.tops)):
+        #     xlayer.tops[i] = px.stringify(xlayer.tops[i])
         self._xgraph.add(X._get_xlayer())
+
 
         # Setup targets
         X = self.get(X.name)
@@ -341,12 +349,11 @@ class XGraph(object):
         for q_key in self.meta_attrs["quant_keys"]:
             q_output.add(
                 q_key=q_key,
-                q_file=self.meta_attrs[q_key]['q_file'],
-                q_info=self.meta_attrs[q_key]['q_info'],
-                orig_pb=self.meta_attrs[q_key]['orig_pb']
+                orig_pb=self.meta_attrs[q_key]['orig_pb'],
+                q_eval=self.meta_attrs[q_key]['q_eval']
             )
             logger.debug("QOutput q_info: {}"
-                         .format(self.meta_attrs[q_key]['q_info']))
+                         .format(self.meta_attrs[q_key]['q_eval']))
 
         return q_output
 

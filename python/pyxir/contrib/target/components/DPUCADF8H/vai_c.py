@@ -80,7 +80,6 @@ class VAICompiler(XGraphBaseCompiler):
             .get_subgraphs(self.xgraph)[0]
         subxg_layers = Xp.subgraph_data
         xgraph = VAICompiler.xgraph_factory.build_from_xlayer(subxg_layers)
-        # assert xgraph.get_name() == net_name
 
         input_names = xgraph.get_input_names()
         input_shapes = [xgraph.get(in_name).shapes[:]
@@ -88,20 +87,25 @@ class VAICompiler(XGraphBaseCompiler):
         output_names = list(Xp.attrs['__top_tensors'].keys()) # xgraph.get_output_names()
         output_shapes = [xgraph.get(out_name).shapes[:]
                          for out_name in output_names]
-
+                         
         if len(input_names) > 1:
             raise NotImplementedError("VAICompiler only handles models with"
                                       " one input at the moment but found: {}"
                                       .format(len(input_names)))
+        graph_input_shapes = input_shapes[0]
+        graph_input_shapes[0] = 4 #batch_size 4 for dpuv3int8
+        in_shape_dict = {}
 
+        in_shape_dict['input_shape'] = ','.join([str(elem) for elem in graph_input_shapes])
+ 
         command = """
         vai_c_tensorflow \
             --frozen_pb {} \
             --arch {} \
             --output_dir {} \
             --net_name {} \
-            --options "{}"
-        """.format(netcfg, self.arch, self.build_dir, net_name, str(dict()))
+            --options  "{}"
+        """.format(netcfg, self.arch, self.build_dir, net_name, in_shape_dict)
 
         logger.info("Command: {}".format(command))
 
@@ -122,6 +126,15 @@ class VAICompiler(XGraphBaseCompiler):
         out_map = {out_name: out_name for out_name in output_names}
         self.c_output.add(net_name, ['libvart-runner.so'], in_map, out_map)
         self.xgraph.set_compiler_output(self.c_output)
+
+        # Write meta.json file
+        data = {}
+        data["lib"] = "libvart-dpu-runner.so"
+        data["filename"] = net_name+".xmodel"
+        data["target"] = "DPUCADF8H"
+        with open(self.build_dir + '/meta.json', 'w') as outfile:
+            json.dump(data, outfile, indent=4, sort_keys=True)
+
 
         # TODO
         self.xgraph.meta_attrs['compiled'] = True
