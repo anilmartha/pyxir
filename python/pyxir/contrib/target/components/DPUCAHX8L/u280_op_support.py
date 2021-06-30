@@ -14,7 +14,7 @@
 
 """
 Module for declaring and specifying supported operations for
-DPUAHX8H U50 target.
+DPUCAHX8L-u280 target.
 """
 
 import math
