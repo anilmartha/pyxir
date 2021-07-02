@@ -80,13 +80,16 @@ DpuFunc::DpuFunc(XLayerHolder &xl, const std::string &build_dir) : KernelFunc(xl
       out_tensors_local_.push_back(create_buffer(buffer_shape));
     }
   }
+  
+  auto in_tensor_names = subgraph_[0]->get_input_tensors();
+  auto out_tensor_names = subgraph_[0]->get_output_tensors();
   std::vector<std::string> dpu_runner_in_tensor_names;
-  std::transform(dpu_runner_in_tensors_.begin(), dpu_runner_in_tensors_.end(),
+  std::transform(in_tensor_names.begin(), in_tensor_names.end(),
                  std::back_inserter(dpu_runner_in_tensor_names),
                  [](const xir::Tensor *t) -> const std::string { return t->get_name(); });
 
   std::vector<std::string> dpu_runner_out_tensor_names;
-  std::transform(dpu_runner_out_tensors_.begin(), dpu_runner_out_tensors_.end(),
+  std::transform(out_tensor_names.begin(), out_tensor_names.end(),
                  std::back_inserter(dpu_runner_out_tensor_names),
                  [](const xir::Tensor *t) -> const std::string { return t->get_name(); });
   
